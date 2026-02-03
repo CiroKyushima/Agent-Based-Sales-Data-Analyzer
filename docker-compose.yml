@@ -1,11 +1,10 @@
 services:
-  agente-vendas:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: agente-vendas
+  app:
+    build: .
+    container_name: python_agent_app
+    volumes:
+      - .:/app
     env_file:
       - .env
-    stdin_open: true
+    stdin_open: true # permite interação se necessário
     tty: true
-    restart: "no"
