@@ -1,0 +1,9 @@
+python-dotenv==1.2.1
+llama-index==0.14.13
+llama-index-experimental==0.6.4
+
+openai==1.109.1
+httpx==0.28.1
+
+pandas==2.2.3
+numpy==1.26.4

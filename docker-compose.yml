@@ -1,0 +1,11 @@
+services:
+  agente-vendas:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agente-vendas
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+    restart: "no"
