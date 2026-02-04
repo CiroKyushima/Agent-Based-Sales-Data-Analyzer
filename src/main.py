@@ -4,11 +4,9 @@ from agent import get_agent
 
 agent = get_agent()
 
-# ✅ Contexto mantém histórico/sessão entre perguntas
 ctx = Context(agent)
 
 async def ask(pergunta: str) -> str:
-    # ReActAgent workflow usa run()
     handler = agent.run(
         pergunta,
         ctx=ctx,
@@ -19,7 +17,7 @@ async def ask(pergunta: str) -> str:
             
     return str(response)
 
-print("🤖 Chat iniciado! Digite 'sair' para encerrar.\n")
+print(" Chat iniciado! Digite 'sair' para encerrar.\n")
 
 async def main_loop():
     while True:
@@ -42,6 +40,5 @@ if __name__ == "__main__":
     try:
         asyncio.run(main_loop())
     except RuntimeError:
-        # Fallback para ambientes com event loop já rodando
         loop = asyncio.get_event_loop()
         loop.run_until_complete(main_loop())
