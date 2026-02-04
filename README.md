@@ -30,12 +30,6 @@ Este projeto implementa um Agente de IA orientado a dados, projetado para analis
 * Resposta em linguagem natural é gerada
 #### Se necessário, o agente usa uma consulta genérica apartir do dataset para análises não previstas.
 
-## próximo passo
-* Interface gráfica interativa
-* Visualizações automáticas no relatório PDF
-* Sistema de cache para consultas repetidas
-* Avaliação automática de confiabilidade das respostas
-
 ## como executar o projeto
 #### instalação manual:
 ```bash
