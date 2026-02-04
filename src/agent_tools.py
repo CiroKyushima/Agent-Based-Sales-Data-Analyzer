@@ -112,6 +112,31 @@ def tool_gap_planejamento() -> dict:
 
 
 # =========================
+# 5b) Métricas extras (para evitar "chutes" do PandasQueryEngine)
+# =========================
+def tool_promocao_share() -> dict:
+    """
+    Retorna qual % das vendas ocorreu com promoção.
+    (linhas, volume e receita)
+    """
+    return t.get_promocao_share(t.df.copy())
+
+
+def tool_preco_medio_geral() -> dict:
+    """
+    Retorna o preço médio geral (actual_price).
+    """
+    return t.get_preco_medio_geral(t.df.copy())
+
+
+def tool_produto_maior_receita() -> dict:
+    """
+    Retorna o produto com maior receita total.
+    Receita = soma(actual_quantity * actual_price) por produto.
+    """
+    return t.get_produto_maior_receita(t.df.copy())
+
+# =========================
 # 6) Elasticidade / Promoção (resumo por promotion_type)
 # =========================
 def tool_impacto_promocao() -> dict:
@@ -169,6 +194,11 @@ TOOLS = [
     FunctionTool.from_defaults(fn=tool_top_entidades, name="top_entidades"),
     FunctionTool.from_defaults(fn=tool_vendas_por_periodo, name="vendas_por_periodo"),
     FunctionTool.from_defaults(fn=tool_gap_planejamento, name="gap_planejamento"),
+
+     # 5b) extras
+    FunctionTool.from_defaults(fn=tool_promocao_share, name="promocao_share"),
+    FunctionTool.from_defaults(fn=tool_preco_medio_geral, name="preco_medio_geral"),
+    FunctionTool.from_defaults(fn=tool_produto_maior_receita, name="produto_maior_receita"),
 
     # 6) Promoção (por tipo)
     FunctionTool.from_defaults(fn=tool_impacto_promocao, name="impacto_promocao"),
