@@ -57,7 +57,7 @@ cd Agent-Based-Sales-Data-Analyzer
 coloque: OPENAI_API_KEY=sua_chave_aqui
 
 # 3️⃣ Build da imagem
-docker build -t sales-agent
+docker compose build
 
 # 5️⃣ Rodar o container
 docker run --env-file .env -it sales-agent
