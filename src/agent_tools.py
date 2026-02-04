@@ -173,6 +173,38 @@ def tool_gerar_relatorio_pdf(top_n: int = 5, output_path: str = "reports/relator
     return t.gerar_relatorio_pdf(t.df.copy(), output_path=output_path, top_n=top_n)
 
 
+def tool_q1_produto_maior_desvio_absoluto() -> dict:
+    return t.q1_produto_maior_desvio_absoluto(t.df.copy())
+
+def tool_q2_local_maior_desvio_percentual_medio() -> dict:
+    return t.q2_local_maior_desvio_percentual_medio(t.df.copy())
+
+def tool_q3_top5_volume_maior_preco_medio() -> dict:
+    return t.q3_top5_volume_maior_preco_medio(t.df.copy())
+
+def tool_q4_mes_menor_volume() -> dict:
+    return t.q4_mes_menor_volume(t.df.copy())
+
+def tool_q5_top10_volume_menor_receita_unitaria() -> dict:
+    return t.q5_top10_volume_menor_receita_unitaria(t.df.copy())
+
+def tool_q6_media_volume_diario() -> dict:
+    return t.q6_media_volume_diario(t.df.copy())
+
+def tool_q7_maior_delta_volume_com_promocao() -> dict:
+    return t.q7_maior_delta_volume_com_promocao(t.df.copy())
+
+def tool_q8_share_receita_por_local() -> dict:
+    return t.q8_share_receita_por_local(t.df.copy())
+
+def tool_q9_maior_pico_diario_produto() -> dict:
+    return t.q9_maior_pico_diario_produto(t.df.copy())
+
+def tool_q10_impacto_remover_top_receita() -> dict:
+    return t.q10_impacto_remover_top_receita(t.df.copy())
+
+
+
 
 TOOLS = [
     FunctionTool.from_defaults(fn=tool_consulta_geral, name="consulta_geral"),
@@ -208,4 +240,15 @@ TOOLS = [
     # 8) relatorio
     FunctionTool.from_defaults(fn=tool_gerar_relatorio, name="gerar_relatorio"),
     FunctionTool.from_defaults(fn=tool_gerar_relatorio_pdf, name="gerar_relatorio_pdf"),
+
+    FunctionTool.from_defaults(fn=tool_q1_produto_maior_desvio_absoluto, name="produto_maior_desvio_absoluto"),
+    FunctionTool.from_defaults(fn=tool_q2_local_maior_desvio_percentual_medio, name="local_maior_desvio_percentual_medio"),
+    FunctionTool.from_defaults(fn=tool_q3_top5_volume_maior_preco_medio, name="top5_volume_maior_preco_medio"),
+    FunctionTool.from_defaults(fn=tool_q4_mes_menor_volume, name="mes_menor_volume"),
+    FunctionTool.from_defaults(fn=tool_q5_top10_volume_menor_receita_unitaria, name="top10_volume_menor_receita_unitaria"),
+    FunctionTool.from_defaults(fn=tool_q6_media_volume_diario, name="media_volume_diario"),
+    FunctionTool.from_defaults(fn=tool_q7_maior_delta_volume_com_promocao, name="maior_delta_promocao"),
+    FunctionTool.from_defaults(fn=tool_q8_share_receita_por_local, name="share_receita_por_local"),
+    FunctionTool.from_defaults(fn=tool_q9_maior_pico_diario_produto, name="pico_diario_produto"),
+    FunctionTool.from_defaults(fn=tool_q10_impacto_remover_top_receita, name="impacto_remover_top_receita"),
 ]
