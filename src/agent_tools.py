@@ -1,39 +1,17 @@
 from llama_index.core.tools import FunctionTool
 from llama_index.experimental.query_engine import PandasQueryEngine
-from llama_index.core import PromptTemplate
 import analytics as t
 
-instruction_str = (
-    "Siga estas regras estritamente:\n"
-    "1. Escreva apenas código Python que utilize o DataFrame 'df'.\n"
-    "2. Não inclua nenhuma explicação, introdução ou conclusão.\n"
-    "3. A última linha do código deve ser a variável com o resultado.\n"
-    "Você é um especialista em Pandas Python. O DataFrame chama-se 'df'.\n"
-    "As colunas disponíveis são: product_id, date, local, planned_quantity, actual_quantity, actual_price, promotion_type, service_level.\n"
-    "Regras de Negócio:\n"
-    "- Receita Real = actual_quantity * actual_price.\n"
-    "- Gap de Planejamento = actual_quantity - planned_quantity.\n"
-    "- O campo 'date' já está convertido para datetime. Use df['date'].dt para filtros de tempo.\n"
-    "- Se a resposta for um número grande, formate-o para bilhões (B) ou milhões (M).\n"
-    "Retorne apenas o resultado da execução do código Python.\n"
-)
-pandas_prompt = PromptTemplate(instruction_str)
-
-# Instanciando o engine com o novo prompt
-query_engine = PandasQueryEngine(
-    df=t.df.copy(), 
-    verbose=False, 
-    pandas_prompt=pandas_prompt
-)
+query_engine = PandasQueryEngine(df=t.df, verbose=False)
 
 def tool_consulta_geral(pergunta: str) -> str:
     """
-    ESSENCIAL para consultas dinâmicas, filtros específicos e cruzamentos que não possuem 
-    ferramentas próprias. Use para: 'Média de preço por local', 'Vendas totais do produto X', 
-    ou 'Soma de receita em um mês específico'.
+    Útil para perguntas complexas sobre o dataset que não possuem ferramentas específicas.
+    Passe a pergunta completa em português.
     """
+    # O motor traduz a pergunta em código Pandas automaticamente
     resposta = query_engine.query(pergunta)
-    print("[Executando PandasQueryEngine]")
+    print("[Texto gerado apartir de pandasQueries]")
     return str(resposta)
 
 # =========================
@@ -156,7 +134,7 @@ def tool_risco_servico(threshold: float = 0.85) -> dict:
 
 TOOLS = [
     FunctionTool.from_defaults(fn=tool_consulta_geral, name="consulta_geral"),
-    # 1) Planejamento / ruptura
+        # 1) Planejamento / ruptura
     FunctionTool.from_defaults(fn=tool_calcular_acuracia_planejamento, name="calcular_acuracia_planejamento"),
     FunctionTool.from_defaults(fn=tool_identificar_ruptura_ou_excesso, name="identificar_ruptura_ou_excesso"),
 
