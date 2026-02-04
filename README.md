@@ -31,6 +31,7 @@ Este projeto implementa um Agente de IA orientado a dados, projetado para analis
 #### Se necessário, o agente usa uma consulta genérica apartir do dataset para análises não previstas.
 
 ## como executar o projeto
+##### é necessario uma key da openAI
 #### instalação manual:
 ```bash
 # 1️⃣ Clonar o repositório
