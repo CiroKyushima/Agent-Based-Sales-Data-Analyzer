@@ -28,7 +28,7 @@ Este projeto implementa um Agente de IA orientado a dados, projetado para analis
 * Execução de cálculo real em Pandas
 * Resultado estruturado é retornado
 * Resposta em linguagem natural é gerada
-#### Se necessário, o agente usa uma consulta genérica para análises não previstas.
+#### Se necessário, o agente usa uma consulta genérica apartir do dataset para análises não previstas.
 
 ## próximo passo
 * Interface gráfica interativa
