@@ -563,3 +563,228 @@ def gerar_relatorio_pdf(
     """Gera o relatório executivo e salva em PDF."""
     texto = gerar_relatorio_executivo(df, top_n=top_n)
     return salvar_relatorio_pdf(texto, output_path)
+
+
+# =========================
+# 10) Perguntas "hard" (tools determinísticas)
+# =========================
+
+def _prepare_sales_base(df: pd.DataFrame) -> pd.DataFrame:
+    """Helper interno: garante tipos numéricos e colunas derivadas."""
+    base = df.copy()
+
+    # datas
+    if "date" in base.columns:
+        base["date"] = pd.to_datetime(base["date"], dayfirst=True, errors="coerce")
+
+    # numéricos
+    for col in ["actual_quantity", "planned_quantity", "actual_price", "service_level"]:
+        if col in base.columns:
+            base[col] = pd.to_numeric(base[col], errors="coerce")
+
+    # derivados
+    if {"actual_quantity", "planned_quantity"}.issubset(base.columns):
+        base["gap"] = (base["actual_quantity"].fillna(0) - base["planned_quantity"].fillna(0))
+
+    if {"actual_quantity", "actual_price"}.issubset(base.columns):
+        base["receita"] = base["actual_quantity"].fillna(0) * base["actual_price"].fillna(0)
+
+    if "promotion_type" in base.columns:
+        base["promo_flag"] = np.where(base["promotion_type"].notna(), "Com Promo", "Sem Promo")
+
+    return base
+
+
+def q1_produto_maior_desvio_absoluto(df: pd.DataFrame) -> dict:
+    """
+    Pergunta 1: Qual produto teve a maior diferença absoluta entre planejado e realizado?
+    Regra: usa |sum(actual - planned)| por produto.
+    """
+    base = _prepare_sales_base(df)
+    if not {"product_id", "gap"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: product_id, planned_quantity, actual_quantity"}
+
+    serie = base.groupby("product_id")["gap"].sum().abs().sort_values(ascending=False)
+    pid = str(serie.index[0])
+    val = float(serie.iloc[0])
+    return {"product_id": pid, "desvio_absoluto_total": val, "desvio_fmt": formatar_grandeza(val)}
+
+
+def q2_local_maior_desvio_percentual_medio(df: pd.DataFrame) -> dict:
+    """
+    Pergunta 2: Qual local tem o maior desvio percentual médio (actual vs planned)?
+    Regra: média de ((actual-planned)/planned)*100, ignorando planned<=0.
+    """
+    base = _prepare_sales_base(df)
+    if not {"local", "planned_quantity", "gap"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: local, planned_quantity, actual_quantity"}
+
+    base["pct_dev"] = np.where(
+        base["planned_quantity"] > 0,
+        (base["gap"] / base["planned_quantity"]) * 100,
+        np.nan,
+    )
+
+    serie = base.groupby("local")["pct_dev"].mean().sort_values(ascending=False)
+    loc = str(serie.index[0])
+    val = float(serie.iloc[0])
+    return {"local": loc, "desvio_percentual_medio": val, "desvio_fmt": f"{val:.2f}%"}
+
+
+def q3_top5_volume_maior_preco_medio(df: pd.DataFrame, top_n: int = 5) -> dict:
+    """
+    Pergunta 3: Entre os top N mais vendidos por volume, qual tem maior preço médio?
+    """
+    base = _prepare_sales_base(df)
+    if not {"product_id", "actual_quantity", "actual_price"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: product_id, actual_quantity, actual_price"}
+
+    top_ids = (
+        base.groupby("product_id")["actual_quantity"].sum().nlargest(top_n).index
+    )
+    serie = (
+        base[base["product_id"].isin(top_ids)]
+        .groupby("product_id")["actual_price"]
+        .mean()
+        .sort_values(ascending=False)
+    )
+
+    pid = str(serie.index[0])
+    val = float(serie.iloc[0])
+    return {"top_n": top_n, "product_id": pid, "preco_medio": val, "preco_medio_fmt": f"{val:.2f}"}
+
+
+def q4_mes_menor_volume(df: pd.DataFrame) -> dict:
+    """
+    Pergunta 4: Qual mês teve o menor volume de vendas?
+    """
+    base = _prepare_sales_base(df)
+    if not {"date", "actual_quantity"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: date, actual_quantity"}
+
+    base["month"] = base["date"].dt.month
+    serie = base.groupby("month")["actual_quantity"].sum().sort_values()
+    mes = int(serie.index[0])
+    vol = float(serie.iloc[0])
+    return {"mes": mes, "volume_total": vol, "volume_fmt": formatar_grandeza(vol)}
+
+
+def q5_top10_volume_menor_receita_unitaria(df: pd.DataFrame, top_n: int = 10) -> dict:
+    """
+    Pergunta 5: Entre os top N por volume, qual tem menor receita por unidade (proxy de preço médio)?
+    Regra: receita_total / volume_total.
+    """
+    base = _prepare_sales_base(df)
+    if not {"product_id", "actual_quantity", "receita"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: product_id, actual_quantity, actual_price"}
+
+    vol = base.groupby("product_id")["actual_quantity"].sum()
+    rev = base.groupby("product_id")["receita"].sum()
+
+    top_ids = vol.nlargest(top_n).index
+    ratio = (rev / vol).loc[top_ids].sort_values()  # receita por unidade
+
+    pid = str(ratio.index[0])
+    val = float(ratio.iloc[0])
+    return {"top_n": top_n, "product_id": pid, "receita_por_unidade": val, "receita_por_unidade_fmt": f"{val:.2f}"}
+
+
+def q6_media_volume_diario(df: pd.DataFrame) -> dict:
+    """
+    Pergunta 6: Qual a média de vendas diárias (volume)?
+    """
+    base = _prepare_sales_base(df)
+    if not {"date", "actual_quantity"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: date, actual_quantity"}
+
+    daily = base.groupby(base["date"].dt.date)["actual_quantity"].sum()
+    val = float(daily.mean())
+    return {"media_volume_diario": val, "media_fmt": formatar_grandeza(val)}
+
+
+def q7_maior_delta_volume_com_promocao(df: pd.DataFrame) -> dict:
+    """
+    Pergunta 7: Qual produto teve o maior aumento de volume quando houve promoção vs sem promoção?
+    Regra: delta% = (media_com / media_sem - 1)*100.
+    Observação: só considera produtos com dados em ambos os cenários.
+    """
+    base = _prepare_sales_base(df)
+    if not {"product_id", "promo_flag", "actual_quantity"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: product_id, promotion_type, actual_quantity"}
+
+    piv = (
+        base.groupby(["product_id", "promo_flag"])["actual_quantity"]
+        .mean()
+        .unstack()
+    )
+
+    if ("Com Promo" not in piv.columns) or ("Sem Promo" not in piv.columns):
+        return {"erro": "Não há dados suficientes de promoção/sem promoção para comparar."}
+
+    delta = ((piv["Com Promo"] / piv["Sem Promo"]) - 1) * 100
+    delta = delta.replace([np.inf, -np.inf], np.nan).dropna()
+
+    if delta.empty:
+        return {"erro": "Nenhum produto possui dados suficientes (com e sem promoção) para calcular delta."}
+
+    pid = str(delta.idxmax())
+    val = float(delta.max())
+    return {"product_id": pid, "delta_volume_percentual": val, "delta_fmt": f"{val:.2f}%"}
+
+
+def q8_share_receita_por_local(df: pd.DataFrame) -> dict:
+    """
+    Pergunta 8: Qual a participação de cada local na receita total (%)?
+    """
+    base = _prepare_sales_base(df)
+    if not {"local", "receita"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: local, actual_quantity, actual_price"}
+
+    total = float(base["receita"].sum())
+    serie = (base.groupby("local")["receita"].sum() / total * 100).sort_values(ascending=False)
+    # devolve dict já em string % (menos chance de LLM multiplicar errado)
+    return {"share_receita_por_local": {str(k): f"{float(v):.2f}%" for k, v in serie.items()}}
+
+
+def q9_maior_pico_diario_produto(df: pd.DataFrame) -> dict:
+    """
+    Pergunta 9: Qual produto teve o maior volume vendido em um único dia?
+    """
+    base = _prepare_sales_base(df)
+    if not {"product_id", "date", "actual_quantity"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: product_id, date, actual_quantity"}
+
+    serie = base.groupby(["product_id", base["date"].dt.date])["actual_quantity"].sum()
+    (pid, dia) = serie.idxmax()
+    val = float(serie.max())
+
+    return {
+        "product_id": str(pid),
+        "data": str(dia),
+        "volume_no_dia": val,
+        "volume_fmt": formatar_grandeza(val),
+    }
+
+
+def q10_impacto_remover_top_receita(df: pd.DataFrame) -> dict:
+    """
+    Pergunta 10: Se removermos o produto de maior receita, quanto a receita total cairia (%)?
+    """
+    base = _prepare_sales_base(df)
+    if not {"product_id", "receita"}.issubset(base.columns):
+        return {"erro": "Colunas necessárias não encontradas: product_id, actual_quantity, actual_price"}
+
+    total = float(base["receita"].sum())
+    rev_prod = base.groupby("product_id")["receita"].sum().sort_values(ascending=False)
+
+    top_pid = str(rev_prod.index[0])
+    top_rev = float(rev_prod.iloc[0])
+    impacto = (top_rev / total * 100) if total else 0.0
+
+    return {
+        "product_id": top_pid,
+        "receita_produto": top_rev,
+        "receita_produto_fmt": formatar_grandeza(top_rev),
+        "impacto_percentual": impacto,
+        "impacto_fmt": f"{impacto:.2f}%",
+    }
