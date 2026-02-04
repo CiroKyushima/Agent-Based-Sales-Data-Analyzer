@@ -53,7 +53,7 @@ git clone https://github.com/CiroKyushima/Agent-Based-Sales-Data-Analyzer
 cd Agent-Based-Sales-Data-Analyzer
 
 # 2️⃣ Criar arquivo .env na pasta do projeto
-dentro do .env: OPENAI_API_KEY=sua_chave_aqui
+coloque: OPENAI_API_KEY=sua_chave_aqui
 
 # 3️⃣ Build da imagem
 docker build -t sales-agent
