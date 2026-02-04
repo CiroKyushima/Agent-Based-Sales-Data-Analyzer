@@ -1,4 +1,3 @@
-# tools.py
 import pandas as pd
 pd.set_option('display.max_rows', 50) 
 pd.set_option('display.max_columns', None)
@@ -336,3 +335,4 @@ def gerar_relatorio_pdf(
     """Gera o relatório executivo e salva em PDF."""
     texto = gerar_relatorio_executivo(df, top_n=top_n)
     return salvar_relatorio_pdf(texto, output_path)
+
