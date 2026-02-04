@@ -1,7 +1,6 @@
 import pandas as pd
 pd.set_option('display.max_rows', 50) 
 pd.set_option('display.max_columns', None)
-# Carregando o dataset
 df = pd.read_csv("data/sales.csv", sep=";", low_memory=False)
 df['date'] = pd.to_datetime(df['date'], dayfirst=True)
 
@@ -314,7 +313,6 @@ def salvar_relatorio_pdf(relatorio_texto: str, output_path: str) -> str:
     else:
         resto = []
 
-    # corpo (preserva tabelas do to_string)
     for bloco in "\n".join(resto).split("\n\n"):
         bloco = bloco.strip()
         if not bloco:
@@ -335,4 +333,3 @@ def gerar_relatorio_pdf(
     """Gera o relatório executivo e salva em PDF."""
     texto = gerar_relatorio_executivo(df, top_n=top_n)
     return salvar_relatorio_pdf(texto, output_path)
-
