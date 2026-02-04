@@ -60,6 +60,6 @@ coloque: OPENAI_API_KEY=sua_chave_aqui
 docker compose build
 
 # 5️⃣ Rodar o container
-docker run --env-file .env -it sales-agent
+docker run --env-file .env -it {nome_da_imagem}
 ```
 
