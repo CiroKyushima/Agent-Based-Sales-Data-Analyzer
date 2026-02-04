@@ -9,7 +9,7 @@ def tool_consulta_geral(pergunta: str) -> str:
     Útil para perguntas complexas sobre o dataset que não possuem ferramentas específicas.
     Passe a pergunta completa em português.
     """
-    # O motor traduz a pergunta em código Pandas automaticamente
+    
     resposta = query_engine.query(pergunta)
     print("[Texto gerado apartir de pandasQueries]")
     return str(resposta)
@@ -23,7 +23,6 @@ def tool_calcular_acuracia_planejamento() -> str:
     e retorna colunas-chave para análise.
     """
     df_out = t.calcular_acuracia_planejamento(t.df.copy())
-    # Mostra um preview em texto (pra não explodir o output)
     return df_out.head(20).to_string(index=False)
 
 
@@ -59,7 +58,6 @@ def tool_ranking_receita_por_local() -> str:
     Ranking de receita real (actual_quantity * actual_price) por local.
     """
     ranking = t.ranking_receita_por_local(t.df.copy())
-    # ranking é uma Series ordenada
     return ranking.head(20).to_string()
 
 
